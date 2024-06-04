@@ -1,0 +1,95 @@
+---
+title: "Lab 11: Genome Informatics"
+author: "Kevin Tan (PID: A16774162)"
+format: pdf
+---
+
+# Section 1. Proportion of G/G in a population
+
+Downloaded a CSV file from ensemble.
+
+Here we read this CSV file: 
+```{r}
+mxl <- read.csv("373531-SampleGenotypes-Homo_sapiens_Variation_Sample_rs8067378.csv")
+head(mxl)
+```
+```{r}
+table(mxl$Genotype..forward.strand.)
+```
+
+```{r}
+table(mxl$Genotype..forward.strand.) / nrow(mxl) * 100
+```
+
+now let's look at a different population. I picked the GBR. 
+
+```{r}
+gbr <- read.csv("373522-SampleGenotypes-Homo_sapiens_Variation_Sample_rs8067378.csv")
+```
+
+Find proportion of G|G
+```{r}
+table(gbr$Genotype..forward.strand.) / nrow(mxl) * 100
+```
+
+This variant that is associated with childhood asthma is more frequent in the GBR population than the MKL population. 
+
+lets now dig into this further. 
+
+
+## Section 4: Population Scale Analysis 
+
+How many samples do we have? 
+
+```{r}
+expr <- read.table("rs8067378_ENSG00000172057.6.txt")
+head(expr)
+```
+```{r}
+nrow(expr)
+```
+
+Sample size of each genotype
+```{r}
+table(expr$geno)
+```
+
+```{r}
+library(ggplot2)
+```
+
+Lets make a boxplot 
+
+```{r}
+boxplot <- ggplot(expr) + 
+  aes(x=geno, y=exp, fill=geno) + 
+  geom_boxplot(notch=TRUE)
+boxplot
+```
+
+```{r}
+df <- data.frame(expr)
+```
+
+```{r}
+analysis <- function(x){
+  med <- median(df$exp[df$geno == x])
+  med
+}
+```
+
+Median expression levels of each genotype
+```{r}
+analysis("A/A")
+analysis("A/G")
+analysis("G/G")
+```
+
+
+
+
+
+
+
+
+

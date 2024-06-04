@@ -1,0 +1,21 @@
+[{
+ "name": "NRAS GTP",
+ "modelSeeds": [
+  "907825097"
+ ],
+ "sequences": [
+  {
+   "proteinChain": {
+    "sequence": "MTEYKLVVVGAGGVGKSALTIQLIQNHFVDEYDPTIEDSYRKQVVIDGETCLLDILDTAGQEEYSAMRDQYMRTGEGFLCVFAINNSKSFADINLYREQIKRVKDSDDVPMVLVGNKCDLPTRTVDTKQAHELAKSYGIPFIETSAKTRQGVEDAFYTLVREIRQYRMKKLNSSDDGTQGCMGLPCVVM",
+    "count": 1
+   }
+  },
+  {
+   "ligand": {
+    "ligand": "CCD_GTP",
+    "count": 1
+   }
+  }
+ ]
+}
+]
