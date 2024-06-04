@@ -1,0 +1,2 @@
+
+ssh -i "~/Downloads/bimm143_k1tan.pem" ubuntu@ec2-35-90-226-180.us-west-2.compute.amazonaws.com

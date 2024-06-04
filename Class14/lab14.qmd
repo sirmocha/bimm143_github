@@ -1,0 +1,244 @@
+---
+title: "Class 14: RNASeq Mini Project"
+author: "Kevin Tan (PID: A16774162)"
+format: pdf
+toc: TRUE
+---
+
+This is a complete RNASeq analysis using counts and metadata from csv files. This can give us novel insights about genes and proteins in a given phenomenon, phenotype or disease progression. 
+
+## Data Import
+
+```{r}
+library(DESeq2)
+```
+
+```{r}
+metafile <- "GSE37704_metadata.csv"
+countfile <- "GSE37704_featurecounts.csv"
+
+#Import data and take a peak
+colData=read.csv(metafile, row.names=1)
+head(colData)
+```
+
+```{r}
+#Import countdata
+countdata = read.csv(countfile, row.names=1)
+head(countdata)
+```
+
+```{r}
+countdata1 <- countdata[,-1]
+head(countdata1)
+```
+
+```{r}
+countdata1 <-  countdata1[rowSums(countdata1) > 0,]
+head(countdata1)
+```
+
+## Running DESeq
+
+We will set up DESeq and run the pipeline to analyze our data. 
+
+```{r}
+#Setup
+library(DESeq2)
+
+#running deseq
+dds = DESeqDataSetFromMatrix(countData=countdata1,
+                             colData=colData,
+                             design=~condition)
+dds <- DESeq(dds)
+
+```
+
+```{r}
+dds
+```
+
+```{r}
+res = results(dds, contrast=c("condition", "hoxa1_kd", "control_sirna"))
+res
+```
+```{r}
+summary(res)
+```
+## Volcano Plot
+
+We can make a volcano plot to compared out log2FoldChange and our padj. 
+
+```{r}
+plot( res$log2FoldChange, -log(res$padj) )
+```
+
+## Add gene annotation
+
+Our data only contains ensembl gene IDs, but our pathway analysis uses KEGG pathways annotated with Entrez gene IDs. We can add these IDs to our pre-existing data. 
+
+```{r}
+library("AnnotationDbi")
+library("org.Hs.eg.db")
+```
+```{r}
+columns(org.Hs.eg.db)
+```
+
+```{r}
+res$symbol = mapIds(org.Hs.eg.db,
+                    keys=row.names(res), 
+                    keytype="ENSEMBL",
+                    column="SYMBOL",
+                    multiVals="first")
+
+res$entrez = mapIds(org.Hs.eg.db,
+                    keys=row.names(res),
+                    keytype="ENSEMBL",
+                    column="ENTREZID",
+                    multiVals="first")
+
+res$name =   mapIds(org.Hs.eg.db,
+                    keys=row.names(res),
+                    keytype="ENSEMBL",
+                    column="GENENAME",
+                    multiVals="first")
+
+head(res, 10)
+```
+
+## Enhanced Volcano Plot
+
+```{r}
+library(ggplot2)
+library(EnhancedVolcano)
+
+x <- as.data.frame(res)
+
+EnhancedVolcano(x, lab = x$entrez, x = 'log2FoldChange', y='pvalue')
+```
+
+Save results 
+
+```{r}
+write.csv(res, file="deseq_results.csv")
+```
+
+
+## Pathway Analysis 
+
+We will use the gage package for pathway analysis. We will then use the pathview package on enriched pathways and draw pathway diagrams shaded by their degree of up/down-regulation
+
+```{r}
+library(pathview)
+library(gage)
+library(gageData)
+```
+
+### KEGG
+
+```{r}
+data("kegg.sets.hs")
+data("sigmet.idx.hs")
+
+#Focus on signaling and metabolic pathways only 
+kegg.sets.hs = kegg.sets.hs[sigmet.idx.hs]
+
+#Examine the first 3 pathways
+head(kegg.sets.hs, 3)
+```
+
+
+```{r}
+foldchanges = res$log2FoldChange
+names(foldchanges) = res$entrez
+head(foldchanges)
+```
+
+```{r}
+# Get the results
+keggres = gage(foldchanges, gsets=kegg.sets.hs)
+```
+```{r}
+attributes(keggres)
+```
+```{r}
+# Look at the first few down (less) pathways
+head(keggres$less)
+```
+
+```{r}
+pathview(gene.data=foldchanges, pathway.id="hsa04110")
+```
+
+```{r}
+# A different PDF based output of the same data
+pathview(gene.data=foldchanges, pathway.id="hsa04110", kegg.native=FALSE)
+```
+
+```{r}
+## Focus on top 5 upregulated pathways here for demo purposes only
+keggrespathways <- rownames(keggres$greater)[1:5]
+
+# Extract the 8 character long IDs part of each string
+keggresids = substr(keggrespathways, start=1, stop=8)
+keggresids
+```
+
+```{r}
+pathview(gene.data=foldchanges, pathway.id=keggresids, species="hsa")
+```
+![](hsa00140.pathview.png)
+![](hsa04142.pathview.png)
+![](hsa04330.pathview.png)
+![](hsa04110.pathview.png)
+![](hsa04630.pathview.png)
+![](hsa04640.pathview.png)
+
+## Gene Ontology
+
+We can use a similar procedure for gene ontology to list out the gene ontology terms. 
+
+```{r}
+data(go.sets.hs)
+data(go.subs.hs)
+
+# Focus on Biological Process subset of GO
+gobpsets = go.sets.hs[go.subs.hs$BP]
+
+gobpres = gage(foldchanges, gsets=gobpsets, same.dir=TRUE)
+
+lapply(gobpres, head)
+```
+
+
+## Reactome Analysis 
+
+Reactome is a database with biological molecules and their related pathways and processes. This has both an online tool and an R package. 
+
+
+```{r}
+sig_genes <- res[res$padj <= 0.05 & !is.na(res$padj), "symbol"]
+print(paste("Total number of significant genes:", length(sig_genes)))
+```
+
+```{r}
+write.table(sig_genes, file="significant_genes.txt", row.names=FALSE, col.names=FALSE, quote=FALSE)
+```
+
+
+![](R-HSA-156842.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
