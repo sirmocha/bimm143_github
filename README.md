@@ -1,7 +1,7 @@
 # Kevin's Bioinformatics Lab Portfolio
 My classwork for [BIMM143 Spring 24](https://bioboot.github.io/bimm143_S24/) at UC San Diego.
 
-- Class 5 [Data visualization with ggplot](https://github.com/sirmocha/bimm143_github/blob/main/class05/class05.gfm)
+- Class 5 [Data visualization with ggplot](https://github.com/sirmocha/bimm143_github/blob/main/class05/class05.md)
 - Class 6 [R functions](https://github.com/sirmocha/bimm143_github/blob/main/Class06/HW-lab6.pdf)
 - Class 7 [Machine Learning 1](https://github.com/sirmocha/bimm143_github/blob/main/class07/lab7.pdf)
 - Class 8 [Breast Cancer Mini-Project](https://github.com/sirmocha/bimm143_github/blob/main/Class08/lab8.pdf)
